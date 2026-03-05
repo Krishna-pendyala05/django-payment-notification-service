@@ -91,7 +91,7 @@ Adding `gcc` and `libcurl` binaries increased the Docker image size and build ti
 
 ## 6. Development vs. Production Docker Compose
 
-**Problem:** Our standard `docker-compose.yml` contained `db` (Postgres) and `localstack`. Running this on a 1GB RAM `t3.micro` EC2 instance while attached to actual AWS managed RDS/SQS wasted precious system resources.
+**Problem:** Our standard `docker-compose.yml` contained `db` (Postgres) and `localstack`. Running this on a 1GB RAM `t2.micro` EC2 instance while attached to actual AWS managed RDS/SQS wasted precious system resources.
 
 **Decision Made:** Rather than writing complex bash scripts to selectively exclude services based on environment variables, I created a dedicated **`docker-compose.prod.yml`**.
 

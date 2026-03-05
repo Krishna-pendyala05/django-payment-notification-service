@@ -6,7 +6,7 @@ This guide describes how to deploy the Django Async Payment Notification Service
 
 1. **AWS CLI** configured on your local machine.
 2. **Terraform** installed.
-3. EC2 Instance (t3.micro) with **Docker** and **Docker Compose** installed.
+3. EC2 Instance (t2.micro, free-tier eligible) with **Docker** and **Docker Compose** installed.
 
 ## Infrastructure Setup
 

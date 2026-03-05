@@ -7,33 +7,39 @@ A robust, production-ready Django application engineered to handle asynchronous 
 ## 🏛️ Architecture Diagram
 
 ```mermaid
-flowchart TD
-    Client(["🌐 Client / API Consumer"])
+flowchart LR
+    Client(["🌐 Client\nAPI Consumer"])
 
-    subgraph EC2["☁️ AWS EC2 (t3.micro — Docker)"]
-        Web["🐍 Web Container\nDjango + Gunicorn\n:8000"]
-        Worker["⚙️ Worker Container\nCelery"]
+    subgraph PROD["  PRODUCTION  "]
+        direction TB
+        subgraph EC2["☁️ AWS EC2 — t2.micro (Free Tier)"]
+            direction TB
+            Web["🐍 Web Container\nDjango + Gunicorn · :8000"]
+            Worker["⚙️ Worker Container\nCelery"]
+        end
+
+        subgraph MANAGED["☁️ AWS Managed Services"]
+            direction TB
+            SQS[("📨 AWS SQS\nMain Queue + DLQ")]
+            RDS[("🗄️ AWS RDS\nPostgres 15")]
+        end
     end
 
-    subgraph AWS["☁️ AWS Managed Services"]
-        SQS[("📨 AWS SQS\nMain Queue +\nDead-Letter Queue")]
-        RDS[("🗄️ AWS RDS\nPostgres 15")]
+    subgraph DEV["  LOCAL DEVELOPMENT ONLY  "]
+        direction TB
+        LocalStack["🧪 LocalStack\nSQS Emulator"]
+        LocalDB[("🐘 Postgres\nDocker Container")]
     end
 
-    subgraph LocalDev["🖥️ Local Development Only"]
-        LocalStack["LocalStack\n(SQS mock)"]
-        LocalDB[("Postgres\nDocker Container")]
-    end
-
-    Client -->|"JWT-authenticated\nHTTP Request"| Web
+    Client -->|"JWT Auth\nHTTP"| Web
     Web -->|"Enqueue task"| SQS
-    Web -->|"Read / Write"| RDS
-    SQS -->|"Poll & consume\ntasks"| Worker
-    Worker -->|"Write results\n& notifications"| RDS
+    Web <-->|"Read / Write"| RDS
+    SQS -->|"Poll & consume"| Worker
+    Worker -->|"Write results"| RDS
 
-    Web -.->|"dev only"| LocalStack
-    Worker -.->|"dev only"| LocalStack
-    Web -.->|"dev only"| LocalDB
+    Web -. "dev only" .-> LocalStack
+    Worker -. "dev only" .-> LocalStack
+    Web -. "dev only" .-> LocalDB
 ```
 
 > **Production**: EC2 containers connect to AWS RDS and AWS SQS.  
@@ -119,7 +125,7 @@ terraform apply
 
 This provisions:
 
-- **EC2 Instance (t3.micro)** for Docker hosts.
+- **EC2 Instance (t2.micro)** — free-tier eligible (12-month) — for Docker hosts.
 - **AWS RDS (Postgres 15)** inside a locked-down security group.
 - **AWS SQS Queues** (Main queue and Dead-Letter Queue).
 - **IAM User** with strict permissions for SQS access.

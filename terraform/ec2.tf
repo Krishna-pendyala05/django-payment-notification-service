@@ -50,7 +50,7 @@ data "aws_ami" "amazon_linux_2" {
 
 resource "aws_instance" "app_server" {
   ami           = data.aws_ami.amazon_linux_2.id
-  instance_type = "t3.micro"
+  instance_type = "t2.micro" # Free-tier eligible (12-month free tier)
   key_name      = var.ssh_key_name
 
   vpc_security_group_ids = [aws_security_group.app_sg.id]
