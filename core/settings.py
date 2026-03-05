@@ -161,3 +161,26 @@ AWS_SECRET_ACCESS_KEY = env('AWS_SECRET_ACCESS_KEY', default='testing')
 AWS_REGION = env('AWS_REGION', default='us-east-1')
 SQS_ENDPOINT_URL = env('SQS_ENDPOINT_URL', default=None)  # Use mock endpoint for LocalStack
 SQS_QUEUE_NAME = env('SQS_QUEUE_NAME', default='payment-notifications')
+
+# Celery Configuration
+CELERY_BROKER_URL = 'sqs://'
+CELERY_BROKER_TRANSPORT = 'sqs'
+CELERY_BROKER_TRANSPORT_OPTIONS = {
+    'region': AWS_REGION,
+    'visibility_timeout': 3600,
+    'polling_interval': 5,
+}
+
+if SQS_ENDPOINT_URL:
+    CELERY_BROKER_TRANSPORT_OPTIONS['predefined_queues'] = {
+        SQS_QUEUE_NAME: {
+            'url': f"{SQS_ENDPOINT_URL}/{SQS_QUEUE_NAME}"
+        }
+    }
+    # For LocalStack, we often need to specify the endpoint
+    CELERY_BROKER_URL = f"sqs://{AWS_ACCESS_KEY_ID}:{AWS_SECRET_ACCESS_KEY}@localhost:4566"
+
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_BACKEND = None  # We store results in our own NotificationLog
+CELERY_TASK_DEFAULT_QUEUE = SQS_QUEUE_NAME
