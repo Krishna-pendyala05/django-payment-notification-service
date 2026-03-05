@@ -159,12 +159,12 @@ SIMPLE_JWT = {
 AWS_ACCESS_KEY_ID = env('AWS_ACCESS_KEY_ID', default='testing')
 AWS_SECRET_ACCESS_KEY = env('AWS_SECRET_ACCESS_KEY', default='testing')
 AWS_REGION = env('AWS_REGION', default='us-east-1')
-SQS_ENDPOINT_URL = env('SQS_ENDPOINT_URL', default=None)  # Use mock endpoint for LocalStack
+SQS_ENDPOINT_URL = env('SQS_ENDPOINT_URL', default=None)  # Use None for real AWS SQS
 SQS_QUEUE_NAME = env('SQS_QUEUE_NAME', default='payment-notifications')
 SQS_DEAD_LETTER_QUEUE_NAME = env('SQS_DEAD_LETTER_QUEUE_NAME', default='payment-notifications-dlq')
 
 # Celery Configuration
-CELERY_BROKER_URL = 'sqs://'
+CELERY_BROKER_URL = env('CELERY_BROKER_URL', default='sqs://')
 CELERY_BROKER_TRANSPORT = 'sqs'
 CELERY_BROKER_TRANSPORT_OPTIONS = {
     'region': AWS_REGION,
@@ -172,14 +172,17 @@ CELERY_BROKER_TRANSPORT_OPTIONS = {
     'polling_interval': 5,
 }
 
+# If SQS_ENDPOINT_URL is provided, we assume we're in a local/mock environment (LocalStack)
 if SQS_ENDPOINT_URL:
     CELERY_BROKER_TRANSPORT_OPTIONS['predefined_queues'] = {
         SQS_QUEUE_NAME: {
             'url': f"{SQS_ENDPOINT_URL}/{SQS_QUEUE_NAME}"
         }
     }
-    # For LocalStack, we often need to specify the endpoint
-    CELERY_BROKER_URL = f"sqs://{AWS_ACCESS_KEY_ID}:{AWS_SECRET_ACCESS_KEY}@localhost:4566"
+    # For LocalStack/Mock SQS, the broker URL needs to include the endpoint or be specifically formatted
+    # However, for pure AWS SQS, 'sqs://' with the right credentials works out of the box.
+    if 'localhost' in SQS_ENDPOINT_URL or 'localstack' in SQS_ENDPOINT_URL:
+         CELERY_BROKER_URL = f"sqs://{AWS_ACCESS_KEY_ID}:{AWS_SECRET_ACCESS_KEY}@localstack:4566" if 'localstack' in SQS_ENDPOINT_URL else f"sqs://{AWS_ACCESS_KEY_ID}:{AWS_SECRET_ACCESS_KEY}@localhost:4566"
 
 CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
