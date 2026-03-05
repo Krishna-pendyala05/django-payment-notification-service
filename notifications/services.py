@@ -27,15 +27,37 @@ class SQSPublisher(QueuePublisher):
     def queue(self):
         if not self._queue:
             try:
-                self._queue = self.sqs.get_queue_by_name(QueueName=self.queue_name)
-            except ClientError as e:
-                if e.response['Error']['Code'] == 'AWS.SimpleQueueService.NonExistentQueue':
-                    # In local development with LocalStack, we might want to create the queue if it doesn't exist
-                    logger.info("Queue not found, creating it...", queue_name=self.queue_name)
-                    self._queue = self.sqs.create_queue(QueueName=self.queue_name)
-                else:
-                    logger.error("Failed to get SQS queue", error=str(e))
-                    raise
+                # Setup DLQ first so we can link it
+                dlq_name = settings.SQS_DEAD_LETTER_QUEUE_NAME
+                try:
+                    dlq = self.sqs.get_queue_by_name(QueueName=dlq_name)
+                except ClientError as e:
+                    if e.response['Error']['Code'] == 'AWS.SimpleQueueService.NonExistentQueue' and settings.SQS_ENDPOINT_URL:
+                        logger.info("DLQ not found, creating it...", queue_name=dlq_name)
+                        dlq = self.sqs.create_queue(QueueName=dlq_name)
+                    else:
+                        raise
+
+                # Redrive Policy for SQS (how many retries before DLQ)
+                import json
+                attributes = {
+                    'RedrivePolicy': json.dumps({
+                        'deadLetterTargetArn': dlq.attributes['QueueArn'],
+                        'maxReceiveCount': '3'
+                    })
+                }
+
+                try:
+                    self._queue = self.sqs.get_queue_by_name(QueueName=self.queue_name)
+                except ClientError as e:
+                    if e.response['Error']['Code'] == 'AWS.SimpleQueueService.NonExistentQueue':
+                        logger.info("Main queue not found, creating it...", queue_name=self.queue_name)
+                        self._queue = self.sqs.create_queue(QueueName=self.queue_name, Attributes=attributes)
+                    else:
+                        raise
+            except Exception as e:
+                logger.error("Failed to initialize SQS queues", error=str(e))
+                raise
         return self._queue
 
     def publish(self, message: str):

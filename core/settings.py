@@ -161,6 +161,7 @@ AWS_SECRET_ACCESS_KEY = env('AWS_SECRET_ACCESS_KEY', default='testing')
 AWS_REGION = env('AWS_REGION', default='us-east-1')
 SQS_ENDPOINT_URL = env('SQS_ENDPOINT_URL', default=None)  # Use mock endpoint for LocalStack
 SQS_QUEUE_NAME = env('SQS_QUEUE_NAME', default='payment-notifications')
+SQS_DEAD_LETTER_QUEUE_NAME = env('SQS_DEAD_LETTER_QUEUE_NAME', default='payment-notifications-dlq')
 
 # Celery Configuration
 CELERY_BROKER_URL = 'sqs://'
