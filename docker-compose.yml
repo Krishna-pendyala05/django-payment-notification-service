@@ -6,9 +6,9 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     environment:
-      - POSTGRES_DB=django_db
-      - POSTGRES_USER=django_user
-      - POSTGRES_PASSWORD=django_password
+      - POSTGRES_DB=payment_db
+      - POSTGRES_USER=django_admin
+      - POSTGRES_PASSWORD=change-me-in-production
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U django_user -d django_db"]
       interval: 5s
@@ -33,15 +33,7 @@ services:
       - .:/app
     ports:
       - "8000:8000"
-    environment:
-      - DEBUG=True
-      - SECRET_KEY=django-insecure-key
-      - DATABASE_URL=postgres://django_user:django_password@db:5432/django_db
-      - AWS_ACCESS_KEY_ID=test
-      - AWS_SECRET_ACCESS_KEY=test
-      - AWS_REGION=us-east-1
-      - SQS_ENDPOINT_URL=http://localstack:4566
-      - ALLOWED_HOSTS=*
+    env_file: .env
     depends_on:
       db:
         condition: service_healthy
@@ -53,14 +45,9 @@ services:
     command: celery -A core worker -l info
     volumes:
       - .:/app
+    env_file: .env
     environment:
-      - DEBUG=True
-      - SECRET_KEY=django-insecure-key
-      - DATABASE_URL=postgres://django_user:django_password@db:5432/django_db
-      - AWS_ACCESS_KEY_ID=test
-      - AWS_SECRET_ACCESS_KEY=test
-      - AWS_REGION=us-east-1
-      - SQS_ENDPOINT_URL=http://localstack:4566
+      - SKIP_MIGRATIONS=true
     depends_on:
       db:
         condition: service_healthy

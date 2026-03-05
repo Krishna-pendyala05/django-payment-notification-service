@@ -1,0 +1,24 @@
+version: "3.8"
+
+# Production docker-compose — uses AWS managed services only.
+# NO local Postgres container (uses AWS RDS via DATABASE_URL in .env)
+# NO LocalStack container (uses real AWS SQS via env vars in .env)
+
+services:
+  web:
+    build: .
+    command: gunicorn core.wsgi:application --bind 0.0.0.0:8000 --workers 3
+    ports:
+      - "8000:8000"
+    env_file: .env
+    restart: unless-stopped
+
+  worker:
+    build: .
+    command: celery -A core worker -l info --concurrency 2
+    env_file: .env
+    environment:
+      - SKIP_MIGRATIONS=true
+    restart: unless-stopped
+    depends_on:
+      - web

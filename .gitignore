@@ -23,3 +23,21 @@ db.sqlite3-journal
 # Celery
 celerybeat-schedule
 celerybeat.pid
+
+# SSH / PEM Keys — NEVER commit private keys
+*.pem
+
+# Terraform — state files contain sensitive resource data & secrets
+terraform/.terraform/
+terraform/.terraform.lock.hcl
+terraform/terraform.tfstate
+terraform/terraform.tfstate.backup
+terraform/terraform.tfvars
+terraform/tfplan
+terraform/tfplan-*
+
+# Django static files (generated at runtime)
+staticfiles/
+
+# Pytest cache
+.pytest_cache/

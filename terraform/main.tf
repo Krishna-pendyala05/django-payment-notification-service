@@ -18,3 +18,7 @@ variable "aws_region" {
 variable "project_name" {
   default = "django-payment-service"
 }
+
+variable "ssh_key_name" {
+  description = "Name of the SSH key pair to use for the EC2 instance"
+}

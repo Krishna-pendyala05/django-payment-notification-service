@@ -24,8 +24,10 @@ if [[ "$DATABASE_URL" == *"postgres"* ]]; then
 fi
 
 # Apply database migrations
-echo "Applying database migrations..."
-python manage.py migrate --noinput
+if [ "$SKIP_MIGRATIONS" != "true" ]; then
+    echo "Applying database migrations..."
+    python manage.py migrate --noinput
+fi
 
 # Collect static files
 echo "Collecting static files..."

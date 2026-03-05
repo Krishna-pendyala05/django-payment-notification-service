@@ -131,6 +131,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
 STATIC_URL = 'static/'
+STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
@@ -172,8 +173,14 @@ CELERY_BROKER_TRANSPORT_OPTIONS = {
     'polling_interval': 5,
 }
 
-# If SQS_ENDPOINT_URL is provided, we assume we're in a local/mock environment (LocalStack)
-if SQS_ENDPOINT_URL:
+SQS_QUEUE_URL = env('SQS_QUEUE_URL', default=None)
+if SQS_QUEUE_URL:
+    CELERY_BROKER_TRANSPORT_OPTIONS['predefined_queues'] = {
+        SQS_QUEUE_NAME: {
+            'url': SQS_QUEUE_URL
+        }
+    }
+elif SQS_ENDPOINT_URL:
     CELERY_BROKER_TRANSPORT_OPTIONS['predefined_queues'] = {
         SQS_QUEUE_NAME: {
             'url': f"{SQS_ENDPOINT_URL}/{SQS_QUEUE_NAME}"
