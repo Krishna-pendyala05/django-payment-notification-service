@@ -1,6 +1,38 @@
 # Django Async Payment Notification Service
 
+**🟢 Live on AWS Free Tier** — `http://3.235.76.131:8000`
+
 A robust, production-ready Django application engineered to handle asynchronous payment processing and notifications. This project leverages an event-driven architecture to ingest payment events via an API and asynchronously process them using Celery workers backed by AWS Simple Queue Service (SQS) as the message broker.
+
+---
+
+## ✅ Live Deployment Evidence
+
+| Resource          | Detail                                                                          |
+| ----------------- | ------------------------------------------------------------------------------- |
+| **EC2 Public IP** | [`3.235.76.131`](http://3.235.76.131:8000) · `t3.micro` · `us-east-1f`          |
+| **Admin Panel**   | [http://3.235.76.131:8000/admin/](http://3.235.76.131:8000/admin/) (live 🟢)    |
+| **API Base URL**  | `http://3.235.76.131:8000/api/v1/`                                              |
+| **RDS Endpoint**  | `terraform-20260305162706385000000001.cqfemok6y1ta.us-east-1.rds.amazonaws.com` |
+| **SQS Queue**     | `https://sqs.us-east-1.amazonaws.com/630596767200/django-payment-service`       |
+| **Instance ID**   | `i-05c960f038d28cd28`                                                           |
+
+> The infrastructure was provisioned with Terraform. The screenshot below was taken directly from the running production server.
+
+![Django Admin panel live on AWS EC2 at 3.235.76.131:8000](docs/deployment_screenshot.png)
+
+---
+
+## ⚡ Performance Benchmarks
+
+Load-tested with **autocannon** against the production EC2 instance. Full results in [BENCHMARKS.md](BENCHMARKS.md).
+
+| Endpoint                     | Req/s   | p50 lat | p99 lat | Errors |
+| ---------------------------- | ------- | ------- | ------- | ------ |
+| `POST /api/v1/payments/`     | **214** | 38 ms   | 142 ms  | 0      |
+| `GET  /api/v1/payments/{id}` | **389** | 21 ms   | 89 ms   | 0      |
+
+> ✅ SRS success criteria met: >200 req/s sustained · p99 <150 ms
 
 ---
 
@@ -162,5 +194,6 @@ docker-compose run web pytest
 
 ## 📖 Related Documents
 
+- [⚡ Performance Benchmarks (autocannon)](BENCHMARKS.md)
 - [Implementation Journey (Engineering Decisions)](IMPLEMENTATION_JOURNEY.md)
 - [EC2 Deployment Guide](DEPLOYMENT_GUIDE.md)
