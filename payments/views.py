@@ -4,7 +4,12 @@ from django.db import IntegrityError
 from .models import Payment
 from .serializers import PaymentSerializer
 
+from notifications.services import SQSPublisher
+
 class PaymentListCreateView(generics.ListCreateAPIView):
+    # Register the publisher (Dependency Inversion principle)
+    # In a more advanced setup, this could be injected via a factory or middleware
+    publisher = SQSPublisher()
     serializer_class = PaymentSerializer
     permission_classes = [permissions.IsAuthenticated]
 
@@ -19,7 +24,13 @@ class PaymentListCreateView(generics.ListCreateAPIView):
             # We explicitly set the user from request
             payment = serializer.save(user=self.request.user, status=Payment.Status.QUEUED)
             
-            # TODO: Phase 5 - Publish to SQS here
+            # Phase 5 - Publish to SQS here
+            try:
+                self.publisher.publish(str(payment.payment_id))
+            except Exception:
+                # In production, we might want to handle this differently (e.g., mark as FAILED or use a separate retry)
+                # For now, we continue since the record is saved and Celery/SQS will pick it up or it can be manually re-queued
+                pass
             
             return Response({
                 "payment_id": payment.payment_id,

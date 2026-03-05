@@ -154,3 +154,10 @@ SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
 }
+
+# AWS / SQS Settings
+AWS_ACCESS_KEY_ID = env('AWS_ACCESS_KEY_ID', default='testing')
+AWS_SECRET_ACCESS_KEY = env('AWS_SECRET_ACCESS_KEY', default='testing')
+AWS_REGION = env('AWS_REGION', default='us-east-1')
+SQS_ENDPOINT_URL = env('SQS_ENDPOINT_URL', default=None)  # Use mock endpoint for LocalStack
+SQS_QUEUE_NAME = env('SQS_QUEUE_NAME', default='payment-notifications')
