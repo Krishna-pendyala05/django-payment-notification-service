@@ -1,0 +1,71 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15-alpine
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_DB=django_db
+      - POSTGRES_USER=django_user
+      - POSTGRES_PASSWORD=django_password
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U django_user -d django_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  localstack:
+    image: localstack/localstack:latest
+    ports:
+      - "4566:4566"
+    environment:
+      - SERVICES=sqs
+      - DEBUG=1
+      - DEFAULT_REGION=us-east-1
+    volumes:
+      - "./localstack_init:/etc/localstack/init/ready.d"
+
+  web:
+    build: .
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - .:/app
+    ports:
+      - "8000:8000"
+    environment:
+      - DEBUG=True
+      - SECRET_KEY=django-insecure-key
+      - DATABASE_URL=postgres://django_user:django_password@db:5432/django_db
+      - AWS_ACCESS_KEY_ID=test
+      - AWS_SECRET_ACCESS_KEY=test
+      - AWS_REGION=us-east-1
+      - SQS_ENDPOINT_URL=http://localstack:4566
+      - ALLOWED_HOSTS=*
+    depends_on:
+      db:
+        condition: service_healthy
+      localstack:
+        condition: service_started
+
+  worker:
+    build: .
+    command: celery -A core worker -l info
+    volumes:
+      - .:/app
+    environment:
+      - DEBUG=True
+      - SECRET_KEY=django-insecure-key
+      - DATABASE_URL=postgres://django_user:django_password@db:5432/django_db
+      - AWS_ACCESS_KEY_ID=test
+      - AWS_SECRET_ACCESS_KEY=test
+      - AWS_REGION=us-east-1
+      - SQS_ENDPOINT_URL=http://localstack:4566
+    depends_on:
+      db:
+        condition: service_healthy
+      localstack:
+        condition: service_started
+
+volumes:
+  postgres_data:

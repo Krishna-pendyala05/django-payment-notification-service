@@ -1,6 +1,6 @@
 from rest_framework import generics, status, permissions
 from rest_framework.response import Response
-from django.db import IntegrityError
+from django.db import IntegrityError, transaction
 from .models import Payment
 from .serializers import PaymentSerializer
 
@@ -21,15 +21,14 @@ class PaymentListCreateView(generics.ListCreateAPIView):
         serializer.is_valid(raise_exception=True)
         
         try:
-            # We explicitly set the user from request
-            payment = serializer.save(user=self.request.user, status=Payment.Status.QUEUED)
+            with transaction.atomic():
+                # We explicitly set the user from request
+                payment = serializer.save(user=self.request.user, status=Payment.Status.QUEUED)
             
             # Phase 5 - Publish to SQS here
             try:
                 self.publisher.publish(str(payment.payment_id))
             except Exception:
-                # In production, we might want to handle this differently (e.g., mark as FAILED or use a separate retry)
-                # For now, we continue since the record is saved and Celery/SQS will pick it up or it can be manually re-queued
                 pass
             
             return Response({

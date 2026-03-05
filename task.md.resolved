@@ -1,0 +1,39 @@
+# Django Async Payment Notification Service - Tasks
+
+- [x] Phase 1 — Project Setup & Configuration
+  - [x] 1. Django Project Setup & App Initialization
+- [x] Phase 2 — Data Models & Migrations
+  - [x] 2. Implement Payment Model
+  - [x] 3. Implement NotificationLog Model
+- [x] Phase 3 — Authentication
+  - [x] 4. Setup JWT Authentication
+- [x] Phase 4 — Payment Intake API
+  - [x] 5. Implement DRF Payment Serializer
+  - [x] 6. Implement Payment Intake View
+  - [x] 7. Implement Payment Status and List Endpoints
+- [x] Phase 5 — SQS Integration (LocalStack)
+  - [x] 8. Configure LocalStack SQS Client Integration
+  - [x] 9. Wire SQS Call Inside Payment Intake
+- [x] Phase 6 — Celery Worker & Notification Task
+  - [x] 10. Establish Celery Worker Configuration
+  - [x] 11. Develop Base Notification Strategy
+  - [x] 12. Implement Celery Main Extraction Task
+- [x] Phase 7 — Retry Policy, DLQ & Idempotency
+  - [x] 13. Inject Worker-level Idempotency Safeguards
+  - [x] 14. Implement Retry Counters & Dead Letter Queue Mechanics
+- [x] Phase 8 — Admin & Health Endpoints
+  - [x] 15. Deploy Universal Health Checks
+  - [x] 16. Develop Secure Admin Summarizations
+- [x] Phase 9 — Tests (Unit, Integration, Concurrency)
+  - [x] 17. Author Core Unit Functionality Logic
+  - [x] 18. Execute Identical Threading Concurrency Verification
+- [ ] Phase 10 — Docker, CI/CD & GitHub Actions
+  - [ ] 19. Compose Universal Docker Ecosystems
+  - [ ] 20. Pipeline Automated GitHub Protections
+- [ ] Phase 11 — AWS Deployment (Free Tier)
+  - [ ] 21. Register Real AWS Infrastructures & Identities
+  - [ ] 22. Formulate Live Internet Deployment Servers
+- [ ] Phase 12 — Benchmark, Docs & IMPLEMENTATION_JOURNEY.md
+  - [ ] 23. Formally Benchmark Response Specifications
+  - [ ] 24. Automate Technical Repository Content
+  - [ ] 25. Author Defense Mechanism Deliverables

@@ -14,6 +14,9 @@ class PaymentSerializer(serializers.ModelSerializer):
             'created_at'
         ]
         read_only_fields = ['status', 'created_at']
+        extra_kwargs = {
+            'payment_id': {'validators': []}  # Disable unique validator to handle in view
+        }
 
     def validate_amount(self, value):
         if value <= 0:
