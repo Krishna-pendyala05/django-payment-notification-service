@@ -39,7 +39,7 @@ Load-tested with **autocannon** against the production EC2 instance. Full result
 ## 🏗️ Architecture Diagram
 
 ```mermaid
-graph LR
+graph TD
     Client(["🌐 Client\nAPI Consumer"]) -->|"JWT Auth\nHTTP"| Web["🐍 Web API\nDjango + Gunicorn"]
 
     subgraph CLOUD["☁️ AWS Cloud Infrastructure"]
