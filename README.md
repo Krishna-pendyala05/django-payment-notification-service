@@ -36,46 +36,21 @@ Load-tested with **autocannon** against the production EC2 instance. Full result
 
 ---
 
-## 🏛️ Architecture Diagram
+## 🏗️ Architecture Diagram
 
 ```mermaid
-flowchart LR
-    Client(["🌐 Client\nAPI Consumer"])
-
-    subgraph PROD["  PRODUCTION  "]
-        direction TB
-        subgraph EC2["☁️ AWS EC2 — t2.micro (Free Tier)"]
-            direction TB
-            Web["🐍 Web Container\nDjango + Gunicorn · :8000"]
-            Worker["⚙️ Worker Container\nCelery"]
-        end
-
-        subgraph MANAGED["☁️ AWS Managed Services"]
-            direction TB
-            SQS[("📨 AWS SQS\nMain Queue + DLQ")]
-            RDS[("🗄️ AWS RDS\nPostgres 15")]
-        end
-    end
-
-    subgraph DEV["  LOCAL DEVELOPMENT ONLY  "]
-        direction TB
-        LocalStack["🧪 LocalStack\nSQS Emulator"]
-        LocalDB[("🐘 Postgres\nDocker Container")]
-    end
-
-    Client -->|"JWT Auth\nHTTP"| Web
-    Web -->|"Enqueue task"| SQS
-    Web <-->|"Read / Write"| RDS
-    SQS -->|"Poll & consume"| Worker
-    Worker -->|"Write results"| RDS
-
 graph LR
-    Client[Client] -->|POST /payments/| Web[Django Web API]
-    Web -->|Write| RDS[(AWS RDS Postgres)]
-    Web -->|Enqueue| SQS[[AWS SQS Queue]]
-    SQS -->|Consume| Worker[Celery Worker]
-    Worker -->|Update Status| RDS
-    Worker -->|Log| Notifications[Notification Logs]
+    Client(["🌐 Client\nAPI Consumer"]) -->|"JWT Auth\nHTTP"| Web["🐍 Web API\nDjango + Gunicorn"]
+
+    subgraph CLOUD["☁️ AWS Cloud Infrastructure"]
+        direction TB
+        Web
+        Web <-->|"Read/Write"| RDS[("🗄️ AWS RDS\nPostgres 15")]
+        Web -->|"Enqueue"| SQS[[📨 AWS SQS]]
+        SQS -->|"Consume"| Worker["⚙️ Celery Worker\nBackground Task"]
+        Worker -->|"Update"| RDS
+        Worker -->|"Verify"| Log["📝 Notification Log"]
+    end
 ```
 
 ---
@@ -93,7 +68,7 @@ Organized for clarity and maintainability:
 
 ---
 
-## � Reviewer Access
+## 🔐 Reviewer Access
 
 For recruiters and reviewers who wish to explore the live system without setting up the environment:
 
@@ -106,13 +81,13 @@ For recruiters and reviewers who wish to explore the live system without setting
 
 ---
 
-## �🚥 Quick Start (Local Development)
+## 🚥 Quick Start (Local Development)
 
 1. **Environment Setup**:
 
    ```bash
    cp .env.example .env
-   # Ensure LocalStack and Postgres are configured
+   # Refer to the .env.example for required LocalStack and DB settings
    ```
 
 2. **Launch with Docker**:
@@ -124,6 +99,7 @@ For recruiters and reviewers who wish to explore the live system without setting
 3. **Access Documentation**:
    - Detailed Walkthrough: [Usage Scenario](docs/usage_scenario.md)
    - Performance Report: [Benchmarks](docs/BENCHMARKS.md)
+   - Full Journey: [Implementation Journey](docs/IMPLEMENTATION_JOURNEY.md)
 
 ---
 
@@ -140,85 +116,19 @@ See full results in [BENCHMARKS.md](docs/BENCHMARKS.md).
 
 ---
 
-## 🛠️ Maintenance & Diagnostics
-
-Utility scripts are available in the `scripts/` directory:
-
-- `diagnose_sqs.py`: Verify connectivity and depth of SQS queues.
-- `benchmarks/`: Autocannon configuration for load testing.
-
----
-
-## 📄 License
-
-Professional implementation by Krishna Pendyala. All rights reserved.
-
-```env
-DEBUG=True
-SECRET_KEY=django-insecure-dev-key
-DATABASE_URL=postgres://django_admin:change-me@db:5432/payment_db
-AWS_ACCESS_KEY_ID=test
-AWS_SECRET_ACCESS_KEY=test
-AWS_REGION=us-east-1
-SQS_ENDPOINT_URL=http://localstack:4566
-SQS_QUEUE_NAME=django-payment-service
-```
-
-### 3. Start the Development Stack
-
-Run the following command from the project root:
-
-```bash
-docker-compose up --build
-```
-
-This spins up:
-
-1. `db`: Local PostgreSQL database.
-2. `localstack`: Local AWS SQS mock.
-3. `web`: Django application running on `http://localhost:8000`.
-4. `worker`: Celery worker reading from LocalStack.
-
----
-
 ## ☁️ AWS Cloud Deployment (Production)
 
-The production environment maps directly to managed AWS services rather than local containers. See `DEPLOYMENT_GUIDE.md` for extended details.
+The production environment maps directly to managed AWS services (RDS, SQS) rather than local containers.
 
-### 1. Provision Infrastructure via Terraform
+1. **Provision Infrastructure**:
 
-```bash
-cd terraform
-terraform init
-terraform apply
-```
+   ```bash
+   cd terraform
+   terraform init && terraform apply
+   ```
 
-This provisions:
-
-- **EC2 Instance (t2.micro)** — free-tier eligible (12-month) — for Docker hosts.
-- **AWS RDS (Postgres 15)** inside a locked-down security group.
-- **AWS SQS Queues** (Main queue and Dead-Letter Queue).
-- **IAM User** with strict permissions for SQS access.
-
-### 2. Production Environment Values
-
-Update your `.env` with the Terraform outputs:
-
-```env
-DEBUG=False
-DATABASE_URL=postgres://django_admin:password@<rds-endpoint>:5432/payment_db
-AWS_ACCESS_KEY_ID=<iam-key>
-AWS_SECRET_ACCESS_KEY=<iam-secret>
-SQS_QUEUE_URL=https://sqs.us-east-1.amazonaws.com/<account-id>/django-payment-service
-```
-
-### 3. Run Production Services on EC2
-
-Deploy using the production compose file which omits `db` and `localstack`.
-
-```bash
-docker-compose -f docker-compose.prod.yml up -d --build
-```
+2. **Deploy Code**:
+   See the full [Deployment Guide](docs/DEPLOYMENT_GUIDE.md) for step-by-step instructions.
 
 ---
 
@@ -230,8 +140,8 @@ To run the automated test suite through Docker:
 docker-compose run web pytest
 ```
 
-## 📖 Related Documents
+---
 
-- [⚡ Performance Benchmarks (autocannon)](BENCHMARKS.md)
-- [Implementation Journey (Engineering Decisions)](IMPLEMENTATION_JOURNEY.md)
-- [EC2 Deployment Guide](DEPLOYMENT_GUIDE.md)
+## 📄 License
+
+Professional implementation by Krishna Pendyala. All rights reserved.
