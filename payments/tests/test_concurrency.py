@@ -33,7 +33,7 @@ class TestConcurrency:
             # Each thread needs its own DB connection in some environments,
             # but pytest-django transaction=True helps.
             try:
-                with patch('notifications.services.SQSPublisher.publish'):
+                with patch('payments.views.process_payment_notification.delay'):
                     response = auth_client.post(url, data)
                     results.append(response.status_code)
             except Exception as e:

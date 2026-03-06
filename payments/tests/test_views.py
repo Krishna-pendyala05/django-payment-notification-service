@@ -17,12 +17,12 @@ class TestPaymentViews:
             'description': 'Purchase order 1'
         }
         
-        with patch('notifications.services.SQSPublisher.publish') as mock_publish:
+        with patch('payments.views.process_payment_notification.delay') as mock_delay:
             response = auth_client.post(url, data)
             
         assert response.status_code == status.HTTP_202_ACCEPTED
         assert response.data['status'] == 'QUEUED'
-        assert mock_publish.called
+        assert mock_delay.called
 
     def test_intake_idempotency_sequential(self, auth_client):
         url = reverse('payment_list_create')
@@ -35,7 +35,7 @@ class TestPaymentViews:
         }
         
         # First request
-        with patch('notifications.services.SQSPublisher.publish'):
+        with patch('payments.views.process_payment_notification.delay'):
             auth_client.post(url, data)
         
         # Second identical request
