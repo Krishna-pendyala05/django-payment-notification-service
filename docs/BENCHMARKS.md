@@ -1,6 +1,6 @@
 # Performance Benchmarks
 
-Load-tested with [autocannon](https://github.com/mcollina/autocannon) against the **Payment Intake endpoint** (`POST /api/v1/payments/`) on the production EC2 instance (`t3.micro`, `us-east-1`) connected to AWS RDS Postgres 15 and AWS SQS.
+Load-tested with [autocannon](https://github.com/mcollina/autocannon) against the **Payment Intake endpoint** (`POST /api/v1/payments/`) on the production EC2 instance (`t2.micro`, `us-east-1`) connected to AWS RDS Postgres 15 and AWS SQS.
 
 ---
 
@@ -57,7 +57,7 @@ The results were validated using **internal latency benchmarking** on the EC2 ho
 
 - **Internal baseline**: A GET request from the EC2 host to `localhost:8000` consistently returns in **~35 ms**.
 - **POST overhead**: The slight increase in latency for the intake endpoint is expected, as it includes a synchronous RDS write and an SQS enqueue.
-- **decency of throughput**: The ~200-300 req/s range is highly performant for a single `t3.micro` instance running a Python/Django stack, validating the efficiency of the asynchronous hand-off architecture.
+- **decency of throughput**: The ~200-300 req/s range is highly performant for a single `t2.micro` instance running a Python/Django stack, validating the efficiency of the asynchronous hand-off architecture.
 
 ---
 
