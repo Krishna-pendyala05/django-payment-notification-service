@@ -10,7 +10,7 @@ A robust, production-ready Django application engineered to handle asynchronous 
 
 | Resource          | Detail                                                                          |
 | ----------------- | ------------------------------------------------------------------------------- |
-| **EC2 Public IP** | [`3.235.76.131`](http://3.235.76.131:8000) · `t3.micro` · `us-east-1f`          |
+| **EC2 Public IP** | [`3.235.76.131`](http://3.235.76.131:8000) · `t2.micro` · `us-east-1f`          |
 | **Admin Panel**   | [http://3.235.76.131:8000/admin/](http://3.235.76.131:8000/admin/) (live 🟢)    |
 | **API Base URL**  | `http://3.235.76.131:8000/api/v1/`                                              |
 | **RDS Endpoint**  | `terraform-20260305162706385000000001.cqfemok6y1ta.us-east-1.rds.amazonaws.com` |

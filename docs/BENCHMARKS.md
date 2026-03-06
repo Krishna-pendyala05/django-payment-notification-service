@@ -63,10 +63,7 @@ The results were validated using **internal latency benchmarking** on the EC2 ho
 
 ## Infrastructure at Test Time
 
-| Resource     | Detail                                                           |
-| ------------ | ---------------------------------------------------------------- |
-| EC2 instance | `t3.micro` · `us-east-1f` · Amazon Linux 2                       |
-| Web server   | Gunicorn 21.x · 4 workers                                        |
-| RDS          | `db.t3.micro` · Postgres 15 · single-AZ                          |
-| SQS          | Standard queue · `django-payment-service` · `us-east-1`          |
-| Network      | EC2 → RDS via VPC Security Group · EC2 → SQS via public endpoint |
+- **EC2 Instance**: `t2.micro` · us-east-1f · Amazon Linux 2 (Free Tier)
+- **RDS Instance**: `db.t3.micro` · PostgreSQL 15.4
+- **Load Balancer**: Direct EC2 access (Gunicorn)
+- **Message Broker**: AWS SQS (Managed)
