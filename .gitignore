@@ -41,3 +41,6 @@ staticfiles/
 
 # Pytest cache
 .pytest_cache/
+
+# Node modules
+node_modules/

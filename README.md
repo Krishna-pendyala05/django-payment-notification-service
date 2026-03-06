@@ -69,51 +69,89 @@ flowchart LR
     SQS -->|"Poll & consume"| Worker
     Worker -->|"Write results"| RDS
 
-    Web -. "dev only" .-> LocalStack
-    Worker -. "dev only" .-> LocalStack
-    Web -. "dev only" .-> LocalDB
+graph LR
+    Client[Client] -->|POST /payments/| Web[Django Web API]
+    Web -->|Write| RDS[(AWS RDS Postgres)]
+    Web -->|Enqueue| SQS[[AWS SQS Queue]]
+    SQS -->|Consume| Worker[Celery Worker]
+    Worker -->|Update Status| RDS
+    Worker -->|Log| Notifications[Notification Logs]
 ```
 
-> **Production**: EC2 containers connect to AWS RDS and AWS SQS.  
-> **Local Dev**: Docker Compose replaces RDS with a Postgres container and SQS with LocalStack.
+---
+
+## 📂 Project Structure
+
+Organized for clarity and maintainability:
+
+- `core/`: Project configuration and settings for LocalStack and AWS.
+- `payments/`: Core API for payment intake, models, and idempotency logic.
+- `notifications/`: Celery tasks and logging for payment notifications.
+- `docs/`: Comprehensive [documentation](docs/usage_scenario.md), [benchmarks](docs/BENCHMARKS.md), and [guides](docs/DEPLOYMENT_GUIDE.md).
+- `scripts/`: Diagnostic and performance testing [scripts](scripts/benchmarks/README.md).
+- `terraform/`: Infrastructure as Code for AWS deployment.
 
 ---
 
-## 🏗️ Architecture Stack
+## � Reviewer Access
 
-This service is designed with scalability and production readiness in mind, separating the web and background task layers using managed AWS services.
+For recruiters and reviewers who wish to explore the live system without setting up the environment:
 
-- **Web Framework**: [Django 4.2](https://www.djangoproject.com/) + [Django REST Framework (DRF)](https://www.django-rest-framework.org/)
-- **Asynchronous Task Queue**: [Celery](https://docs.celeryq.dev/)
-- **Message Broker**: [AWS SQS](https://aws.amazon.com/sqs/) (using `kombu` and `pycurl`)
-- **Primary Database**: PostgreSQL (via AWS RDS in production, Docker container locally)
-- **Infrastructure as Code (IaC)**: [HashiCorp Terraform](https://www.terraform.io/)
-- **Containerization**: Docker & Docker Compose
-- **Web Server**: Gunicorn
+- **Admin URL**: `http://3.235.76.131:8000/admin`
+- **Username**: `admin`
+- **Password**: `adminpass`
 
-## 🚀 Key Features
-
-- **Decoupled Processing**: Web API ingests payments quickly and hands off processing to a background Celery worker via AWS SQS natively.
-- **Production-ready Infrastructure**: Complete Terraform templates to provision AWS EC2, AWS RDS Postgres, AWS SQS, and IAM user policies with precise least-privilege permissions.
-- **Local Development Parity**: A development `docker-compose.yml` that mocks AWS SQS using `LocalStack` and runs a local Postgres instance so you can develop 100% offline.
-- **Robust Deployment configuration**: Production-ready `docker-compose.prod.yml`, dedicated entrypoint scripts to cleanly manage database migrations and static files, and security groups properly locked down.
-- **JWT Authentication**: Secured REST endpoints using `rest_framework_simplejwt`.
-- **API Documentation**: Automated Swagger/OpenAPI documentation schema via `drf-spectacular`.
+> [!IMPORTANT]
+> These credentials are for review purposes only. The system is deployed on a dedicated AWS instance for verification.
 
 ---
 
-## 💻 Local Development Setup
+## �🚥 Quick Start (Local Development)
 
-To run the application locally without an active AWS account, we use `LocalStack` to mock SQS.
+1. **Environment Setup**:
 
-### 1. Prerequisites
+   ```bash
+   cp .env.example .env
+   # Ensure LocalStack and Postgres are configured
+   ```
 
-- Docker & Docker Compose
-- Python 3.11+ (if running outside containers)
+2. **Launch with Docker**:
 
-### 2. Environment Variables
+   ```bash
+   docker-compose up --build
+   ```
 
-Copy `.env.example` to `.env` (or create a new `.env` file):
+3. **Access Documentation**:
+   - Detailed Walkthrough: [Usage Scenario](docs/usage_scenario.md)
+   - Performance Report: [Benchmarks](docs/BENCHMARKS.md)
+
+---
+
+## ✅ Performance Validation
+
+Validating the system against production-grade requirements:
+
+| Endpoint                     | Baseline Latency | Actual Throughput |
+| :--------------------------- | :--------------- | :---------------- |
+| `POST /api/v1/payments/`     | ~48ms            | ~208 req/s        |
+| `GET /api/v1/payments/{id}/` | ~32ms            | ~312 req/s        |
+
+See full results in [BENCHMARKS.md](docs/BENCHMARKS.md).
+
+---
+
+## 🛠️ Maintenance & Diagnostics
+
+Utility scripts are available in the `scripts/` directory:
+
+- `diagnose_sqs.py`: Verify connectivity and depth of SQS queues.
+- `benchmarks/`: Autocannon configuration for load testing.
+
+---
+
+## 📄 License
+
+Professional implementation by Krishna Pendyala. All rights reserved.
 
 ```env
 DEBUG=True

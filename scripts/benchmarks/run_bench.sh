@@ -1,0 +1,2 @@
+TOKEN=$(docker exec app-web-1 python manage.py shell -c "from rest_framework_simplejwt.tokens import AccessToken; from django.contrib.auth import get_user_model; print(AccessToken.for_user(get_user_model().objects.get(username='admin')))")
+docker run --rm --net host node:18-alpine sh -c "npm install -g autocannon && autocannon -c 10 -d 30 -m POST -H 'Authorization: Bearer $TOKEN' -H 'Content-Type: application/json' -b '{\"amount\":\"99.99\",\"currency\":\"USD\",\"status\":\"completed\"}' http://localhost:8000/api/v1/payments/"

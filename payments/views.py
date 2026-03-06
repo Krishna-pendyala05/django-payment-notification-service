@@ -4,12 +4,10 @@ from django.db import IntegrityError, transaction
 from .models import Payment
 from .serializers import PaymentSerializer
 
-from notifications.services import SQSPublisher
+from notifications.tasks import process_payment_notification
 
 class PaymentListCreateView(generics.ListCreateAPIView):
-    # Register the publisher (Dependency Inversion principle)
-    # In a more advanced setup, this could be injected via a factory or middleware
-    publisher = SQSPublisher()
+    # Register the task dispatcher
     serializer_class = PaymentSerializer
     permission_classes = [permissions.IsAuthenticated]
 
@@ -25,10 +23,11 @@ class PaymentListCreateView(generics.ListCreateAPIView):
                 # We explicitly set the user from request
                 payment = serializer.save(user=self.request.user, status=Payment.Status.QUEUED)
             
-            # Phase 5 - Publish to SQS here
+            # Phase 5 - Dispatch Celery task
             try:
-                self.publisher.publish(str(payment.payment_id))
+                process_payment_notification.delay(str(payment.payment_id))
             except Exception:
+                # We log this in a real app, but keep the current failure-silent behavior
                 pass
             
             return Response({

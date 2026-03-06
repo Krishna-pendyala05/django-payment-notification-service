@@ -1,0 +1,1 @@
+{"Version":"2012-10-17","Statement":[{"Action":["sqs:SendMessage","sqs:ReceiveMessage","sqs:DeleteMessage","sqs:GetQueueAttributes","sqs:GetQueueUrl"],"Effect":"Allow","Resource":"*"},{"Action":["cloudwatch:PutMetricData"],"Effect":"Allow","Resource":"*"}]}
