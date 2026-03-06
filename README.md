@@ -144,4 +144,4 @@ docker-compose run web pytest
 
 ## 📄 License
 
-Professional implementation by Krishna Pendyala. All rights reserved.
+Professional implementation by Murali Krishna Pendyala. All rights reserved.
